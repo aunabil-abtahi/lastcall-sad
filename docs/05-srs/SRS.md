@@ -1,7 +1,7 @@
 # Software Requirements Specification
 ## LastCall
 
-**Version:** 0.2 · **Date:** 20 November 2026 · **Status:** Draft for scope and attribution review
+**Version:** 0.1 · **Date:** 20 November 2026 · **Status:** Draft for scope and attribution review
 
 **Course:** CSE 3412 — System Analysis and Design Lab · Section B · Fall 2026
 
@@ -21,8 +21,7 @@
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
-| 0.1 | 2026-11-20 | Pending confirmation. Proposed coordinator: Ahanaf Abtahi. | Initial draft, prototype scope, models and proposed acceptance checks. |
-| 0.2 | 2026-11-20 | Pending student confirmation | Revised full-system scope, category workflows, payment lifecycle, quality targets, models and traceability. |
+| 0.1 | 2026-11-20 | Ahanaf Abtahi. | Initial draft, Revised full-system scope, category workflows, payment lifecycle, quality targets, models and traceability. |
 
 ## 1. Introduction
 
