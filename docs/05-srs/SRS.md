@@ -441,7 +441,7 @@ The prototype orientation covers hold expiry and collection for buyers, cutoff a
 
 The models specify the complete proposed system. For the academic prototype, an approved test payment adapter and synthetic issuer policy can stand in for external services. The prototype requires exactly one sale unit per listing; the full-system models allow multiple independent units.
 
-Figures A-01–A-15 retain their editable Mermaid or PlantUML sources below; Figure A-02 is divided into five panels, for 19 diagram source blocks in total. Markdown rendering depends on viewer support; a plain Markdown viewer may show code, and PlantUML fences require a compatible renderer or plugin. For the faculty PDF/source submission, render each source to SVG or high-resolution PNG, insert it with its figure caption into the final document, use landscape/full-page layouts for the DFD, class diagram and ERD, then inspect the exported PDF at readable text size. Keep these source blocks with the submission. The class diagram and ERD remain detailed: use a large landscape page or tiled detail pages if reducing to A4 would make labels smaller than 10 pt.
+Figures A-01–A-15 retain their editable Mermaid sources below; Figure A-02 is divided into five panels, for 19 diagram source blocks in total. GitHub renders Mermaid diagrams in Markdown; a viewer without Mermaid support may show the source instead. For the faculty PDF/source submission, render each source to SVG or high-resolution PNG, insert it with its figure caption into the final document, use landscape/full-page layouts for the DFD, class diagram and ERD, then inspect the exported PDF at readable text size. Keep these source blocks with the submission. The class diagram and ERD remain detailed: use a large landscape page or tiled detail pages if reducing to A4 would make labels smaller than 10 pt.
 
 ### A.1 Context diagram and level 1 DFD
 
@@ -613,61 +613,36 @@ flowchart LR
 
 **Figure A-03. Use case diagram.**
 
-```plantuml
-@startuml
-left to right direction
-actor Buyer
-actor Seller
-actor "Individual seller" as Individual
-actor "Business seller" as Business
-actor Administrator as Admin
-actor "Issuer / operator" as Issuer
-actor "Payment provider" as Provider
-Individual --|> Seller
-Business --|> Seller
-rectangle LastCall {
-  usecase "UC-01 Account access" as UC01
-  usecase "UC-02 Publish surplus food" as UC02
-  usecase "UC-03 Review and publish event tickets" as UC03
-  usecase "UC-04 Discover eligible offers" as UC04
-  usecase "UC-05 Reserve and pay" as UC05
-  usecase "UC-06 Collect food or transfer event tickets" as UC06
-  usecase "UC-07 Report and resolve a case" as UC07
-  usecase "UC-08 List and review transport tickets" as UC08
-  usecase "UC-09 List and review merchant entitlements" as UC09
-  usecase "UC-10 Transfer or update entitlement status" as UC10
-  usecase "UC-11 Reconcile payments and refunds" as UC11
-}
-Buyer -- UC01
-Buyer -- UC04
-Buyer -- UC05
-Buyer -- UC06
-Buyer -- UC07
-Buyer -- UC10
-Buyer -- UC11
-Seller -- UC01
-Business -- UC02
-Seller -- UC03
-Seller -- UC06
-Seller -- UC07
-Seller -- UC08
-Seller -- UC09
-Seller -- UC10
-Seller -- UC11
-Admin -- UC01
-Admin -- UC03
-Admin -- UC07
-Admin -- UC08
-Admin -- UC09
-Admin -- UC11
-Issuer -- UC03
-Issuer -- UC06
-Issuer -- UC08
-Issuer -- UC09
-Issuer -- UC10
-Provider -- UC05
-Provider -- UC11
-@enduml
+```mermaid
+flowchart LR
+    Buyer[Buyer]
+    Seller[Seller]
+    Individual[Individual seller] --> Seller
+    Business[Business seller] --> Seller
+    Admin[Administrator]
+    Issuer[Issuer / operator]
+    Provider[Payment provider]
+
+    subgraph LastCall
+        UC01([UC-01 Account access])
+        UC02([UC-02 Publish surplus food])
+        UC03([UC-03 Review and publish event tickets])
+        UC04([UC-04 Discover eligible offers])
+        UC05([UC-05 Reserve and pay])
+        UC06([UC-06 Collect food or transfer event tickets])
+        UC07([UC-07 Report and resolve a case])
+        UC08([UC-08 List and review transport tickets])
+        UC09([UC-09 List and review merchant entitlements])
+        UC10([UC-10 Transfer or update entitlement status])
+        UC11([UC-11 Reconcile payments and refunds])
+    end
+
+    Buyer --> UC01 & UC04 & UC05 & UC06 & UC07 & UC10 & UC11
+    Seller --> UC01 & UC03 & UC06 & UC07 & UC08 & UC09 & UC10 & UC11
+    Business --> UC02
+    Admin --> UC01 & UC03 & UC07 & UC08 & UC09 & UC11
+    Issuer --> UC03 & UC06 & UC08 & UC09 & UC10
+    Provider --> UC05 & UC11
 ```
 
 | ID | Use case / actors | Precondition | Main scenario | Exception and postcondition |
@@ -690,80 +665,48 @@ Provider -- UC11
 
 **Figure A-04. Food activity.**
 
-```plantuml
-@startuml
-|Business seller|
-start
-:Submit a food offer with stock and pickup window;
-|LastCall|
-if (Valid offer and authorised business?) then (yes)
-  :Publish available stock;
-else (no)
-  :Return the missing field or access decision;
-  stop
-endif
-|Buyer|
-:Request a reservation and start checkout;
-|LastCall|
-if (Reserved unit and verified timely payment?) then (yes)
-  :Confirm the order and sell the reserved unit;
-else (no)
-  :At verified decline, voiding or hold expiry close the unpaid order;
-  :Release the unit only if still eligible;
-  :Send any unapplied funds for reconciliation;
-  stop
-endif
-|LastCall|
-repeat
-  :Await seller collection submission or pickup deadline;
-  if (Pickup deadline reached?) then (yes)
-    :Mark Missed without refund or restocking;
-    stop
-  endif
-  :Validate seller authority, pickup window and absence of blocking case;
-repeat while (Collection invalid?) is (yes) not (no)
-:Mark Fulfilled;
-stop
-@enduml
+```mermaid
+flowchart TD
+    Start([Start]) --> Submit[Business seller: submit food offer with stock and pickup window]
+    Submit --> ValidOffer{Valid offer and authorised business?}
+    ValidOffer -- Yes --> Publish[LastCall: publish available stock]
+    ValidOffer -- No --> Return[LastCall: return the missing field or access decision] --> End([End])
+    Publish --> Reserve[Buyer: request a reservation and start checkout]
+    Reserve --> TimelyPayment{Reserved unit and verified timely payment?}
+    TimelyPayment -- Yes --> Confirm[LastCall: confirm the order and sell the reserved unit]
+    TimelyPayment -- No --> Close[LastCall: close the unpaid order on verified decline, voiding or hold expiry]
+    Close --> Release[Release the unit only if still eligible]
+    Release --> Reconcile[Send any unapplied funds for reconciliation] --> End
+    Confirm --> Await[LastCall: await seller collection submission or pickup deadline]
+    Await --> Deadline{Pickup deadline reached?}
+    Deadline -- Yes --> Missed[Mark Missed without refund or restocking] --> End
+    Deadline -- No --> Validate[Validate seller authority, pickup window and absence of a blocking case]
+    Validate --> CollectionValid{Collection valid?}
+    CollectionValid -- No --> Await
+    CollectionValid -- Yes --> Fulfilled[Mark Fulfilled] --> End
 ```
 
 **Eligibility review and authorised handover (UC-03, UC-08–UC-10).**
 
 **Figure A-05. Entitlement activity.**
 
-```plantuml
-@startuml
-|Seller|
-start
-:Submit category details, ownership and issuer reference;
-|LastCall|
-:Place submission in Pending review;
-|Administrator|
-:Check ownership, issuer terms, deadline and category-specific validity;
-|Issuer / operator|
-:Supply verification through an approved channel when available;
-|Administrator|
-if (Policy, validity and approved handover established?) then (yes)
-  :Record approved method and decision;
-else (no)
-  :Record denial or leave pending for further evidence;
-  stop
-endif
-|LastCall|
-:Publish eligible units;
-:Complete UC-05 with verified success before the hold deadline;
-|Seller|
-:Request handover through the approved method;
-|LastCall|
-if (Order, window and eligibility valid with no blocking case?) then (yes)
-  :Record authorised delivery or transfer;
-  :Notify buyer;
-  :Record redemption updates only from approved evidence;
-else (no)
-  :Block handover and route paid exceptions for review;
-endif
-stop
-@enduml
+```mermaid
+flowchart TD
+    Start([Start]) --> Submit[Seller: submit category details, ownership and issuer reference]
+    Submit --> Pending[LastCall: place submission in Pending review]
+    Pending --> Review[Administrator: check ownership, issuer terms, deadline and category-specific validity]
+    Review --> Evidence[Issuer / operator: supply verification through an approved channel when available]
+    Evidence --> Eligible{Policy, validity and approved handover established?}
+    Eligible -- No --> RecordDecision[Administrator: record denial or leave pending for further evidence] --> End([End])
+    Eligible -- Yes --> Approved[Administrator: record approved method and decision]
+    Approved --> Publish[LastCall: publish eligible units]
+    Publish --> Payment[LastCall: complete UC-05 with verified success before the hold deadline]
+    Payment --> Request[Seller: request handover through the approved method]
+    Request --> ValidHandover{Order, window and eligibility valid with no blocking case?}
+    ValidHandover -- Yes --> Transfer[LastCall: record authorised delivery or transfer]
+    Transfer --> Notify[Notify buyer]
+    Notify --> Redemption[Record redemption updates only from approved evidence] --> End
+    ValidHandover -- No --> Block[Block handover and route paid exceptions for review] --> End
 ```
 
 ### A.4 Class diagram (design)
