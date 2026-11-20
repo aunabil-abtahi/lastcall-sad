@@ -1,0 +1,22 @@
+.env
+.env.*
+node_modules/
+__pycache__/
+*.pyc
+venv/
+.venv/
+.DS_Store
+.idea/
+.vscode/
+dist/
+build/
+
+# Local copies of faculty references
+uiu-sad-lab-student-resources*/
+uiu-sad-lab-student-resources*.zip
+sad-lab-project-template/
+SRS_Sample_HealthBridge_BD*
+
+# Temporary files and Office lock files
+*.tmp
+~$*
